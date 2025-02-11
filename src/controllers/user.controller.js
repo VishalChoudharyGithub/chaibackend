@@ -2,7 +2,8 @@ import { asynchandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadToCloud } from "../utils/cloudinary.js";
+
 const registerUser = asynchandler(async (req, res) => {
   const { fullName, email, username, password } = req.body;
   if (
@@ -17,8 +18,8 @@ const registerUser = asynchandler(async (req, res) => {
   const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
   if (!avatarLocalPath) throw new ApiError(400, "Avatar is required.");
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  const avatar = await uploadToCloud(avatarLocalPath);
+  const coverImage = await uploadToCloud(coverImageLocalPath);
   if (!avatar)
     throw new ApiError(
       400,
