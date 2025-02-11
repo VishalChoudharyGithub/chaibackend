@@ -16,8 +16,10 @@ const uploadToCloud = async (localFilePath) => {
     console.log("File is uploaded to cloud successfully", response.url);
     return response;
   } catch (error) {
-    fs.unlinkSync(localFilePath);
+    console.error(error);
     return null;
+  } finally {
+    fs.unlinkSync(localFilePath);
   }
 };
 
