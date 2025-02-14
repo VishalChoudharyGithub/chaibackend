@@ -62,18 +62,22 @@ const registerUser = asynchandler(async (req, res) => {
 
 const loginUser = asynchandler(async (req, res) => {
   const { username, email, password } = req.body;
-  if ([username, email, password].some((field) => field.trim() === ""))
-    throw new ApiError(400, "All fields are required");
+  if (!email && !username)
+    throw new ApiError(400, "Email or username is required.");
 
-  const user = User.findOne({ $or: [{ username }, { email }] });
+  if (password.trim() === "") throw new ApiError(400, "Password is required");
+
+  const user = await User.findOne({ $or: [{ username }, { email }] });
   if (!user) throw new ApiError(404, "User does not exist");
-
+  console.log(user);
   const isPasswordCorrect = await user.isPasswordCorrect(password);
   if (!isPasswordCorrect) throw new ApiError(401, "Invalid user credentials");
 
   const { accessToken, refreshToken } =
     await generateAccessAndRefreshToken(user);
-  const loggedInUser = user.select("-password -refreshToken");
+  const loggedInUser = await User.findOne(user._id).select(
+    "-password -refreshToken"
+  );
   const options = {
     httpOnly: true,
     secure: true,
@@ -106,8 +110,8 @@ const logoutUser = asynchandler(async (req, res) => {
   });
   res
     .status(200)
-    .clearCookie("AccessToken", options)
-    .clearCookie("RefreshToken", options)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
     .json(new ApiResponse(200, {}, "user logged out successfully."));
 });
 
